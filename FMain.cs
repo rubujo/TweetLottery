@@ -1,10 +1,5 @@
-using GetCachable;
-using System.Data;
 using System.Security.Cryptography;
 using TweetLottery.Codes.Extensions;
-using TweetLottery.Codes.Models;
-using TweetLottery.Codes.Utils;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TweetLottery;
 
@@ -13,204 +8,238 @@ namespace TweetLottery;
 /// </summary>
 public partial class FMain : Form
 {
-	/// <summary>
-	/// 建構函式
-	/// </summary>
-	/// <param name="httpClientFactory">IHttpClientFactory</param>
-	public FMain(IHttpClientFactory httpClientFactory)
-	{
-		InitializeComponent();
+    /// <summary>
+    /// 建構函式
+    /// </summary>
+    /// <param name="httpClientFactory">IHttpClientFactory</param>
+    public FMain(IHttpClientFactory httpClientFactory)
+    {
+        InitializeComponent();
 
-		_httpClientFactory = httpClientFactory;
-	}
+        _httpClientFactory = httpClientFactory;
+    }
 
-	private void MForm_Load(object sender, EventArgs e)
-	{
-		try
-		{
-			CustomInit();
-		}
-		catch (Exception ex)
-		{
-			ShowErrMsg(this, ex.ToString());
-		}
-	}
+    private void MForm_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            CustomInit();
+        }
+        catch (Exception ex)
+        {
+            ShowErrMsg(this, ex.ToString());
+        }
+    }
 
-	private async void BtnFetchTweets_Click(object sender, EventArgs e)
-	{
-		Control[] ctrlSet1 =
-		{
-			TBAuthToken,
-			TBCsrfToken,
-			TBQueryString,
-			BtnFetchTweets,
-			BtnReset,
-			BtnDrawTweet,
-			NUPDrawNumber
-		};
+    private async void BtnFetchTweets_Click(object sender, EventArgs e)
+    {
+        Control[] ctrlSet1 =
+        {
+            TBAuthToken,
+            TBCsrfToken,
+            TBQueryString,
+            BtnFetchTweets,
+            BtnReset,
+            BtnDrawTweet,
+            NUPDrawNumber
+        };
 
-		try
-		{
-			ctrlSet1.SetEnabled(false);
+        try
+        {
+            ctrlSet1.SetEnabled(false);
 
-			FetchedTweets.Clear();
-			FetchedUsers.Clear();
+            FetchedTweets.Clear();
+            FetchedUsers.Clear();
 
-			SharedCancellationTokenSource = new();
-			SharedCancellationToken = SharedCancellationTokenSource.Token;
+            SharedCancellationTokenSource = new();
+            SharedCancellationToken = SharedCancellationTokenSource.Token;
 
-			await FetchTweets(SharedCancellationToken.Value).ContinueWith(task =>
-			{
-				try
-				{
-					AddDataToListView(LVFetchedTweets, FetchedTweets);
-				}
-				catch (Exception ex)
-				{
-					ShowErrMsg(this, ex.ToString());
-				}
-			});
-		}
-		catch (Exception ex)
-		{
-			ShowErrMsg(this, ex.ToString());
-		}
-		finally
-		{
-			ctrlSet1.SetEnabled(true);
-		}
-	}
+            await FetchTweets(SharedCancellationToken.Value).ContinueWith(task =>
+            {
+                try
+                {
+                    AddDataToListView(LVFetchedTweets, FetchedTweets);
+                }
+                catch (Exception ex)
+                {
+                    ShowErrMsg(this, ex.ToString());
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            ShowErrMsg(this, ex.ToString());
+        }
+        finally
+        {
+            ctrlSet1.SetEnabled(true);
+        }
+    }
 
-	private void BtnCancel_Click(object sender, EventArgs e)
-	{
-		try
-		{
-			if (SharedCancellationTokenSource?.IsCancellationRequested == false)
-			{
-				SharedCancellationTokenSource?.Cancel();
-			}
-		}
-		catch (Exception ex)
-		{
-			ShowErrMsg(this, ex.ToString());
-		}
-	}
+    private void BtnCancel_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            if (SharedCancellationTokenSource?.IsCancellationRequested == false)
+            {
+                SharedCancellationTokenSource?.Cancel();
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowErrMsg(this, ex.ToString());
+        }
+    }
 
-	private void BtnReset_Click(object sender, EventArgs e)
-	{
-		try
-		{
-			FetchedTweets.Clear();
-			FetchedUsers.Clear();
+    private void BtnReset_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            FetchedTweets.Clear();
+            FetchedUsers.Clear();
 
-			LVFetchedTweets.InvokeIfRequired(() =>
-			{
-				LVFetchedTweets.BeginUpdate();
-				LVFetchedTweets.Items.Clear();
-				LVFetchedTweets.EndUpdate();
-			});
+            LVFetchedTweets.InvokeIfRequired(() =>
+            {
+                LVFetchedTweets.BeginUpdate();
+                LVFetchedTweets.Items.Clear();
+                LVFetchedTweets.EndUpdate();
+            });
 
-			TBLog.InvokeIfRequired(() =>
-			{
-				TBLog.Clear();
-			});
-		}
-		catch (Exception ex)
-		{
-			ShowErrMsg(this, ex.ToString());
-		}
-	}
+            TBLog.InvokeIfRequired(TBLog.Clear);
+        }
+        catch (Exception ex)
+        {
+            ShowErrMsg(this, ex.ToString());
+        }
+    }
 
-	private void BtnDrawTweet_Click(object sender, EventArgs e)
-	{
-		Control[] ctrlSet1 =
-		{
-			TBAuthToken,
-			TBCsrfToken,
-			TBQueryString,
-			BtnFetchTweets,
-			BtnCancel,
-			BtnReset,
-			BtnDrawTweet,
-			NUPDrawNumber
-		};
+    private void BtnDrawTweet_Click(object sender, EventArgs e)
+    {
+        Control[] ctrlSet1 =
+        {
+            TBAuthToken,
+            TBCsrfToken,
+            TBQueryString,
+            BtnFetchTweets,
+            BtnCancel,
+            BtnReset,
+            BtnDrawTweet,
+            NUPDrawNumber
+        };
 
-		try
-		{
-			ctrlSet1.SetEnabled(false);
+        try
+        {
+            ctrlSet1.SetEnabled(false);
 
-			int itemCount = LVFetchedTweets.Items.Count;
+            int itemCount = LVFetchedTweets.Items.Count;
 
-			decimal number = NUPDrawNumber.Value;
+            decimal number = NUPDrawNumber.Value;
 
-			if (number <= 0)
-			{
-				ShowWarnMsg(this, "抽取數量不可小於 1。");
+            if (number <= 0)
+            {
+                ShowWarnMsg(this, "抽取數量不可小於 1。");
 
-				return;
-			}
+                return;
+            }
 
-			if (itemCount <= 0)
-			{
-				ShowWarnMsg(this, "請先獲取貼文。");
+            if (itemCount <= 0)
+            {
+                ShowWarnMsg(this, "請先獲取貼文。");
 
-				return;
-			}
+                return;
+            }
 
-			if (number > itemCount)
-			{
-				ShowWarnMsg(this, "抽取數量不可大於獲取的貼文數量。");
+            if (number > itemCount)
+            {
+                ShowWarnMsg(this, "抽取數量不可大於獲取的貼文數量。");
 
-				return;
-			}
+                return;
+            }
 
-			List<ListViewItem> drawResult = new();
+            // 抽獎前先清除舊的紀錄。
+            TBLog.InvokeIfRequired(TBLog.Clear);
 
-			for (int i = 0; i < number; i++)
-			{
-				int index = RandomNumberGenerator.GetInt32(0, LVFetchedTweets.Items.Count);
+            List<ListViewItem> drawResult = new();
 
-				ListViewItem listViewItem = LVFetchedTweets.Items[index];
+            for (int i = 0; i < number; i++)
+            {
+                int index = RandomNumberGenerator.GetInt32(0, LVFetchedTweets.Items.Count);
 
-				drawResult.Add(listViewItem);
-			}
-		}
-		catch (Exception ex)
-		{
-			ShowErrMsg(this, ex.ToString());
-		}
-		finally
-		{
-			ctrlSet1.SetEnabled(true);
-		}
-	}
+                ListViewItem listViewItem = LVFetchedTweets.Items[index];
 
-	private void LVFetchedTweets_MouseClick(object sender, MouseEventArgs e)
-	{
-		switch (e.Button)
-		{
-			case MouseButtons.Left:
-				break;
-			case MouseButtons.Right:
-				OpenTweetUrl(LVFetchedTweets, e);
-				break;
-			default:
-				break;
-		}
-	}
+                while (drawResult.Contains(listViewItem))
+                {
+                    index = RandomNumberGenerator.GetInt32(0, LVFetchedTweets.Items.Count);
 
-	private void LVFetchedTweets_MouseDoubleClick(object sender, MouseEventArgs e)
-	{
-		switch (e.Button)
-		{
-			case MouseButtons.Left:
-				CopyToClipboard(LVFetchedTweets);
-				break;
-			case MouseButtons.Right:
-				OpenUserTwitterUrl(LVFetchedTweets, e);
-				break;
-			default:
-				break;
-		}
-	}
+                    listViewItem = LVFetchedTweets.Items[index];
+                }
+
+                drawResult.Add(listViewItem);
+            }
+
+            if (drawResult.Any())
+            {
+                string drawResultMessage = string.Empty;
+
+                drawResultMessage += $"恭喜下列發推者的貼文被抽選中：{Environment.NewLine}";
+
+                int orderIndex = 1;
+
+                foreach (ListViewItem listViewItem in drawResult)
+                {
+                    string screenName = listViewItem.SubItems[0].Text,
+                        name = listViewItem.SubItems[1].Text,
+                        userIDStr = listViewItem.SubItems[2].Text,
+                        idStr = listViewItem.SubItems[3].Text,
+                        fullText = listViewItem.SubItems[4].Text,
+                        createdAt = listViewItem.SubItems[5].Text;
+
+                    drawResultMessage += $"[排序：{orderIndex}] [發推者：{name}] " +
+                        $"[全文：{fullText}] " +
+                        $"[貼文網址：https://twitter.com/i/web/status/{idStr}]{Environment.NewLine}";
+
+                    orderIndex++;
+                }
+
+                WriteLog(this, drawResultMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowErrMsg(this, ex.ToString());
+        }
+        finally
+        {
+            ctrlSet1.SetEnabled(true);
+        }
+    }
+
+    private void LVFetchedTweets_MouseClick(object sender, MouseEventArgs e)
+    {
+        switch (e.Button)
+        {
+            case MouseButtons.Left:
+                break;
+            case MouseButtons.Right:
+                CopyToClipboard(LVFetchedTweets);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void LVFetchedTweets_MouseDoubleClick(object sender, MouseEventArgs e)
+    {
+        switch (e.Button)
+        {
+            case MouseButtons.Left:
+                OpenTweetUrl(LVFetchedTweets, e);
+                break;
+            case MouseButtons.Right:
+                OpenUserTwitterUrl(LVFetchedTweets, e);
+                break;
+            default:
+                break;
+        }
+    }
 }
