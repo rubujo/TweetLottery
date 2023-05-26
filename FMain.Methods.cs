@@ -11,6 +11,7 @@ using TweetLottery.Codes.Models;
 using TweetLottery.Codes.Utils;
 using OfficeOpenXml.Drawing;
 using System.Drawing.Imaging;
+using System.Threading;
 
 namespace TweetLottery;
 
@@ -100,7 +101,7 @@ public partial class FMain
 
             if (!string.IsNullOrEmpty(imgKey))
             {
-                listview.InvokeIfRequired(() =>
+                listview.InvokeIfRequired(async () =>
                 {
                     if (listview.SmallImageList != null &&
                         !listview.SmallImageList.Images.ContainsKey(imgKey))
@@ -148,6 +149,8 @@ public partial class FMain
                         int milliseconds = CustomFunction.GetRandomInterval(2, 5);
 
                         WriteLog(this, $"在 {milliseconds} 毫秒後才會再次處理資料。");
+
+                        await Task.Delay(milliseconds, CancellationToken.None);
                     }
                     else
                     {
@@ -256,6 +259,8 @@ public partial class FMain
 
                         idStr = listViewItem.SubItems[3].Text;
                         screenName = listViewItem.SubItems[0].Text;
+
+                        reTryCount++;
                     }
                 }
 
