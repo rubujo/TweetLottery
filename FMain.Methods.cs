@@ -11,7 +11,6 @@ using TweetLottery.Codes.Models;
 using TweetLottery.Codes.Utils;
 using OfficeOpenXml.Drawing;
 using System.Drawing.Imaging;
-using System.Threading;
 
 namespace TweetLottery;
 
@@ -62,7 +61,7 @@ public partial class FMain
     /// </summary>
     /// <param name="listview">ListView</param>
     /// <param name="listTweetData">List&lt;TweetData&gt;</param>
-    public void AddDataToListView(ListView listview, List<TweetData> listTweetData)
+    public async void AddDataToListView(ListView listview, List<TweetData> listTweetData)
     {
         List<ListViewItem> dataSet = new();
 
@@ -101,7 +100,9 @@ public partial class FMain
 
             if (!string.IsNullOrEmpty(imgKey))
             {
-                listview.InvokeIfRequired(async () =>
+                bool needDelay = false;
+
+                listview.InvokeIfRequired(() =>
                 {
                     if (listview.SmallImageList != null &&
                         !listview.SmallImageList.Images.ContainsKey(imgKey))
@@ -109,6 +110,9 @@ public partial class FMain
                         // 以 imgKey 為鍵值，將 Image 暫存 10 分鐘。
                         Image? image = BetterCacheManager.GetCachableData(imgKey, () =>
                         {
+                            // 當有下載行為時，才需要模擬人工瀏覽。
+                            needDelay = true;
+
                             try
                             {
                                 WriteLog(this, $"正在下載使用者（{imgKey}）的個人檔案圖檔……");
@@ -144,13 +148,6 @@ public partial class FMain
                         image = null;
 
                         WriteLog(this, $"使用者（{imgKey}）的個人檔案圖檔下載完成。");
-
-                        // 隨機延遲以模擬人工瀏覽。（2~5 秒）
-                        int milliseconds = CustomFunction.GetRandomInterval(2, 5);
-
-                        WriteLog(this, $"在 {milliseconds} 毫秒後才會再次處理資料。");
-
-                        await Task.Delay(milliseconds, CancellationToken.None);
                     }
                     else
                     {
@@ -159,6 +156,16 @@ public partial class FMain
 
                     newListViewItem.ImageKey = imgKey;
                 });
+
+                if (needDelay)
+                {
+                    // 隨機延遲以模擬人工瀏覽。（2~5 秒）
+                    int milliseconds = CustomFunction.GetRandomInterval(2, 5);
+
+                    WriteLog(this, $"在 {milliseconds} 毫秒後才會再次處理推文。");
+
+                    await Task.Delay(milliseconds, CancellationToken.None);
+                }
             }
 
             dataSet.Add(newListViewItem);
@@ -567,17 +574,6 @@ public partial class FMain
             WriteLog(this, finishedMessage);
 
             ShowMsg(this, finishedMessage);
-
-            // 繫結 TweetData 跟 UserData。
-            foreach (TweetData tweetData in FetchedTweets)
-            {
-                UserData? userData = FetchedUsers.FirstOrDefault(n => n.ID == tweetData.UserID);
-
-                if (userData != null)
-                {
-                    tweetData.UserData = userData;
-                }
-            }
         }
         catch (OperationCanceledException)
         {
@@ -588,19 +584,6 @@ public partial class FMain
                 WriteLog(this, canceledMessage);
 
                 ShowMsg(this, canceledMessage);
-
-                // 繫結 TweetData 跟 UserData。
-                foreach (TweetData tweetData in FetchedTweets)
-                {
-                    UserData? userData = FetchedUsers.FirstOrDefault(n => n.ID == tweetData.UserID);
-
-                    if (userData != null)
-                    {
-                        tweetData.UserData = userData;
-                    }
-                }
-
-                AddDataToListView(LVFetchedTweets, FetchedTweets);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 using TweetLottery.Codes.Extensions;
+using TweetLottery.Codes.Models;
 
 namespace TweetLottery;
 
@@ -59,6 +60,17 @@ public partial class FMain : Form
             {
                 try
                 {
+                    // 繫結 TweetData 跟 UserData。
+                    foreach (TweetData tweetData in FetchedTweets)
+                    {
+                        UserData? userData = FetchedUsers.FirstOrDefault(n => n.ID == tweetData.UserID);
+
+                        if (userData != null)
+                        {
+                            tweetData.UserData = userData;
+                        }
+                    }
+
                     AddDataToListView(LVFetchedTweets, FetchedTweets);
                 }
                 catch (Exception ex)
