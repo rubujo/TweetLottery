@@ -26,7 +26,7 @@ public partial class FMain
 	private readonly IHttpClientFactory _httpClientFactory;
 
 	/// <summary>
-	/// 獲取到的貼文資料
+	/// 獲取到的推文資料
 	/// </summary>
 	private readonly List<TweetData> FetchedTweets = new();
 

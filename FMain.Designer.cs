@@ -40,9 +40,10 @@
 			LQueryString = new Label();
 			BtnReset = new Button();
 			LNumber = new Label();
-			NUPDrawNumber = new NumericUpDown();
-			BtnDrawTweet = new Button();
-			((System.ComponentModel.ISupportInitialize)NUPDrawNumber).BeginInit();
+			NUPDrawAmount = new NumericUpDown();
+			BtnDrawTweets = new Button();
+			LVersion = new Label();
+			((System.ComponentModel.ISupportInitialize)NUPDrawAmount).BeginInit();
 			SuspendLayout();
 			// 
 			// BtnFetchTweets
@@ -51,7 +52,7 @@
 			BtnFetchTweets.Name = "BtnFetchTweets";
 			BtnFetchTweets.Size = new Size(75, 23);
 			BtnFetchTweets.TabIndex = 6;
-			BtnFetchTweets.Text = "獲取貼文";
+			BtnFetchTweets.Text = "獲取推文";
 			BtnFetchTweets.UseVisualStyleBackColor = true;
 			BtnFetchTweets.Click += BtnFetchTweets_Click;
 			// 
@@ -61,7 +62,7 @@
 			LVFetchedTweets.GridLines = true;
 			LVFetchedTweets.Location = new Point(12, 122);
 			LVFetchedTweets.Name = "LVFetchedTweets";
-			LVFetchedTweets.Size = new Size(776, 249);
+			LVFetchedTweets.Size = new Size(776, 212);
 			LVFetchedTweets.TabIndex = 12;
 			LVFetchedTweets.UseCompatibleStateImageBehavior = false;
 			LVFetchedTweets.View = View.Details;
@@ -70,11 +71,12 @@
 			// 
 			// TBLog
 			// 
-			TBLog.Location = new Point(12, 377);
+			TBLog.Location = new Point(12, 340);
 			TBLog.Multiline = true;
 			TBLog.Name = "TBLog";
+			TBLog.ReadOnly = true;
 			TBLog.ScrollBars = ScrollBars.Both;
-			TBLog.Size = new Size(776, 61);
+			TBLog.Size = new Size(776, 140);
 			TBLog.TabIndex = 13;
 			// 
 			// TBAuthToken
@@ -154,30 +156,40 @@
 			LNumber.TabIndex = 9;
 			LNumber.Text = "抽取數量";
 			// 
-			// NUPNumber
+			// NUPDrawNumber
 			// 
-			NUPDrawNumber.Location = new Point(93, 93);
-			NUPDrawNumber.Name = "NUPNumber";
-			NUPDrawNumber.Size = new Size(120, 23);
-			NUPDrawNumber.TabIndex = 10;
+			NUPDrawAmount.Location = new Point(93, 93);
+			NUPDrawAmount.Name = "NUPDrawNumber";
+			NUPDrawAmount.Size = new Size(120, 23);
+			NUPDrawAmount.TabIndex = 10;
 			// 
 			// BtnDrawTweet
 			// 
-			BtnDrawTweet.Location = new Point(219, 93);
-			BtnDrawTweet.Name = "BtnDrawTweet";
-			BtnDrawTweet.Size = new Size(75, 23);
-			BtnDrawTweet.TabIndex = 11;
-			BtnDrawTweet.Text = "抽取貼文";
-			BtnDrawTweet.UseVisualStyleBackColor = true;
-			BtnDrawTweet.Click += BtnDrawTweet_Click;
+			BtnDrawTweets.Location = new Point(219, 93);
+			BtnDrawTweets.Name = "BtnDrawTweet";
+			BtnDrawTweets.Size = new Size(75, 23);
+			BtnDrawTweets.TabIndex = 11;
+			BtnDrawTweets.Text = "抽取推文";
+			BtnDrawTweets.UseVisualStyleBackColor = true;
+			BtnDrawTweets.Click += BtnDrawTweets_Click;
+			// 
+			// LVersion
+			// 
+			LVersion.AutoSize = true;
+			LVersion.Location = new Point(12, 483);
+			LVersion.Name = "LVersion";
+			LVersion.Size = new Size(55, 15);
+			LVersion.TabIndex = 14;
+			LVersion.Text = "版本號：";
 			// 
 			// FMain
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(800, 450);
-			Controls.Add(BtnDrawTweet);
-			Controls.Add(NUPDrawNumber);
+			ClientSize = new Size(800, 507);
+			Controls.Add(LVersion);
+			Controls.Add(BtnDrawTweets);
+			Controls.Add(NUPDrawAmount);
 			Controls.Add(LNumber);
 			Controls.Add(BtnReset);
 			Controls.Add(LQueryString);
@@ -195,7 +207,7 @@
 			Name = "FMain";
 			Text = "推文抽獎";
 			Load += MForm_Load;
-			((System.ComponentModel.ISupportInitialize)NUPDrawNumber).EndInit();
+			((System.ComponentModel.ISupportInitialize)NUPDrawAmount).EndInit();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -214,7 +226,8 @@
 		private Label LQueryString;
 		private Button BtnReset;
 		private Label LNumber;
-		private NumericUpDown NUPDrawNumber;
-		private Button BtnDrawTweet;
+		private NumericUpDown NUPDrawAmount;
+		private Button BtnDrawTweets;
+		private Label LVersion;
 	}
 }
