@@ -1,5 +1,3 @@
-using System.Data;
-using System.Security.Cryptography;
 using TweetLottery.Codes.Extensions;
 
 namespace TweetLottery;
@@ -41,8 +39,10 @@ public partial class FMain : Form
 			TBQueryString,
 			BtnFetchTweets,
 			BtnReset,
+			NUPDrawAmount,
+			CBExcludeSameUser,
 			BtnDrawTweets,
-			NUPDrawAmount
+			BtnExportTweets
 		};
 
 		try
@@ -114,7 +114,7 @@ public partial class FMain : Form
 		}
 	}
 
-	private void BtnDrawTweets_Click(object sender, EventArgs e)
+	private async void BtnDrawTweets_Click(object sender, EventArgs e)
 	{
 		Control[] ctrlSet1 =
 		{
@@ -122,10 +122,11 @@ public partial class FMain : Form
 			TBCsrfToken,
 			TBQueryString,
 			BtnFetchTweets,
-			BtnCancel,
 			BtnReset,
+			NUPDrawAmount,
+			CBExcludeSameUser,
 			BtnDrawTweets,
-			NUPDrawAmount
+			BtnExportTweets
 		};
 
 		try
@@ -134,9 +135,9 @@ public partial class FMain : Form
 
 			int itemCount = LVFetchedTweets.Items.Count;
 
-			decimal number = NUPDrawAmount.Value;
+			decimal drawAmount = NUPDrawAmount.Value;
 
-			if (number <= 0)
+			if (drawAmount <= 0)
 			{
 				ShowWarnMsg(this, "抽取數量不可小於 1。");
 
@@ -150,62 +151,17 @@ public partial class FMain : Form
 				return;
 			}
 
-			if (number > itemCount)
+			if (drawAmount > itemCount)
 			{
-				ShowWarnMsg(this, "抽取數量不可大於獲取的推文數量。");
+				ShowWarnMsg(this, $"抽取數量（{drawAmount}）不可大於獲取的推文數量（{itemCount}）。");
 
 				return;
 			}
 
-			// 抽取前先清除舊的紀錄。
-			TBLog.InvokeIfRequired(TBLog.Clear);
+			SharedCancellationTokenSource = new();
+			SharedCancellationToken = SharedCancellationTokenSource.Token;
 
-			List<ListViewItem> drawResult = new();
-
-			for (int i = 0; i < number; i++)
-			{
-				int index = RandomNumberGenerator.GetInt32(0, LVFetchedTweets.Items.Count);
-
-				ListViewItem listViewItem = LVFetchedTweets.Items[index];
-
-				// 排除重複的推文以及重複的使用者。
-				while (drawResult.Contains(listViewItem) &&
-					!drawResult.Any(n => n.SubItems[0].Text == listViewItem.SubItems[0].Text))
-				{
-					index = RandomNumberGenerator.GetInt32(0, LVFetchedTweets.Items.Count);
-
-					listViewItem = LVFetchedTweets.Items[index];
-				}
-
-				drawResult.Add(listViewItem);
-			}
-
-			if (drawResult.Any())
-			{
-				string drawResultMessage = string.Empty;
-
-				drawResultMessage += $"抽選中的推文：{Environment.NewLine}";
-
-				int orderIndex = 1;
-
-				foreach (ListViewItem listViewItem in drawResult)
-				{
-					string screenName = listViewItem.SubItems[0].Text,
-						name = listViewItem.SubItems[1].Text,
-						userIDStr = listViewItem.SubItems[2].Text,
-						idStr = listViewItem.SubItems[3].Text,
-						fullText = listViewItem.SubItems[4].Text,
-						createdAt = listViewItem.SubItems[5].Text;
-
-					drawResultMessage += $"[排序：{orderIndex}] [使用者：{name}] " +
-						$"[全文：{fullText}] " +
-						$"[推文網址：https://twitter.com/i/web/status/{idStr}]{Environment.NewLine}";
-
-					orderIndex++;
-				}
-
-				WriteLog(this, drawResultMessage);
-			}
+			await DrawTweets(drawAmount, SharedCancellationToken.Value);
 		}
 		catch (Exception ex)
 		{
@@ -224,7 +180,7 @@ public partial class FMain : Form
 			case MouseButtons.Left:
 				break;
 			case MouseButtons.Right:
-				CopyToClipboard(LVFetchedTweets);
+				CopyToClipboard(this, LVFetchedTweets);
 				break;
 			default:
 				break;
@@ -243,6 +199,40 @@ public partial class FMain : Form
 				break;
 			default:
 				break;
+		}
+	}
+
+	private async void BtnExportTweets_Click(object sender, EventArgs e)
+	{
+		Control[] ctrlSet1 =
+		{
+			TBAuthToken,
+			TBCsrfToken,
+			TBQueryString,
+			BtnFetchTweets,
+			BtnReset,
+			NUPDrawAmount,
+			CBExcludeSameUser,
+			BtnDrawTweets,
+			BtnExportTweets
+		};
+
+		try
+		{
+			ctrlSet1.SetEnabled(false);
+
+			SharedCancellationTokenSource = new();
+			SharedCancellationToken = SharedCancellationTokenSource.Token;
+
+			await DoExportTask(this, LVFetchedTweets, SharedCancellationToken.Value);
+		}
+		catch (Exception ex)
+		{
+			ShowErrMsg(this, ex.ToString());
+		}
+		finally
+		{
+			ctrlSet1.SetEnabled(true);
 		}
 	}
 }

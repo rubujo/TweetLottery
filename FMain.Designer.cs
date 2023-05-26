@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FMain));
 			BtnFetchTweets = new Button();
 			LVFetchedTweets = new ListView();
 			TBLog = new TextBox();
@@ -43,6 +44,8 @@
 			NUPDrawAmount = new NumericUpDown();
 			BtnDrawTweets = new Button();
 			LVersion = new Label();
+			CBExcludeSameUser = new CheckBox();
+			BtnExportTweets = new Button();
 			((System.ComponentModel.ISupportInitialize)NUPDrawAmount).BeginInit();
 			SuspendLayout();
 			// 
@@ -63,7 +66,7 @@
 			LVFetchedTweets.Location = new Point(12, 122);
 			LVFetchedTweets.Name = "LVFetchedTweets";
 			LVFetchedTweets.Size = new Size(776, 212);
-			LVFetchedTweets.TabIndex = 12;
+			LVFetchedTweets.TabIndex = 14;
 			LVFetchedTweets.UseCompatibleStateImageBehavior = false;
 			LVFetchedTweets.View = View.Details;
 			LVFetchedTweets.MouseClick += LVFetchedTweets_MouseClick;
@@ -77,7 +80,7 @@
 			TBLog.ReadOnly = true;
 			TBLog.ScrollBars = ScrollBars.Both;
 			TBLog.Size = new Size(776, 140);
-			TBLog.TabIndex = 13;
+			TBLog.TabIndex = 15;
 			// 
 			// TBAuthToken
 			// 
@@ -156,19 +159,20 @@
 			LNumber.TabIndex = 9;
 			LNumber.Text = "抽取數量";
 			// 
-			// NUPDrawNumber
+			// NUPDrawAmount
 			// 
 			NUPDrawAmount.Location = new Point(93, 93);
-			NUPDrawAmount.Name = "NUPDrawNumber";
+			NUPDrawAmount.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+			NUPDrawAmount.Name = "NUPDrawAmount";
 			NUPDrawAmount.Size = new Size(120, 23);
 			NUPDrawAmount.TabIndex = 10;
 			// 
-			// BtnDrawTweet
+			// BtnDrawTweets
 			// 
-			BtnDrawTweets.Location = new Point(219, 93);
-			BtnDrawTweets.Name = "BtnDrawTweet";
+			BtnDrawTweets.Location = new Point(335, 93);
+			BtnDrawTweets.Name = "BtnDrawTweets";
 			BtnDrawTweets.Size = new Size(75, 23);
-			BtnDrawTweets.TabIndex = 11;
+			BtnDrawTweets.TabIndex = 12;
 			BtnDrawTweets.Text = "抽取推文";
 			BtnDrawTweets.UseVisualStyleBackColor = true;
 			BtnDrawTweets.Click += BtnDrawTweets_Click;
@@ -179,14 +183,36 @@
 			LVersion.Location = new Point(12, 483);
 			LVersion.Name = "LVersion";
 			LVersion.Size = new Size(55, 15);
-			LVersion.TabIndex = 14;
+			LVersion.TabIndex = 16;
 			LVersion.Text = "版本號：";
+			// 
+			// CBExcludeSameUser
+			// 
+			CBExcludeSameUser.AutoSize = true;
+			CBExcludeSameUser.Location = new Point(219, 95);
+			CBExcludeSameUser.Name = "CBExcludeSameUser";
+			CBExcludeSameUser.Size = new Size(110, 19);
+			CBExcludeSameUser.TabIndex = 11;
+			CBExcludeSameUser.Text = "排除相同使用者";
+			CBExcludeSameUser.UseVisualStyleBackColor = true;
+			// 
+			// BtnExportTweets
+			// 
+			BtnExportTweets.Location = new Point(631, 93);
+			BtnExportTweets.Name = "BtnExportTweets";
+			BtnExportTweets.Size = new Size(75, 23);
+			BtnExportTweets.TabIndex = 13;
+			BtnExportTweets.Text = "匯出推文";
+			BtnExportTweets.UseVisualStyleBackColor = true;
+			BtnExportTweets.Click += BtnExportTweets_Click;
 			// 
 			// FMain
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(800, 507);
+			Controls.Add(BtnExportTweets);
+			Controls.Add(CBExcludeSameUser);
 			Controls.Add(LVersion);
 			Controls.Add(BtnDrawTweets);
 			Controls.Add(NUPDrawAmount);
@@ -203,6 +229,7 @@
 			Controls.Add(LVFetchedTweets);
 			Controls.Add(BtnFetchTweets);
 			FormBorderStyle = FormBorderStyle.Fixed3D;
+			Icon = (Icon)resources.GetObject("$this.Icon");
 			MaximizeBox = false;
 			Name = "FMain";
 			Text = "推文抽獎";
@@ -229,5 +256,7 @@
 		private NumericUpDown NUPDrawAmount;
 		private Button BtnDrawTweets;
 		private Label LVersion;
+		private CheckBox CBExcludeSameUser;
+		private Button BtnExportTweets;
 	}
 }
