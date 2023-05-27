@@ -58,24 +58,28 @@ public partial class FMain : Form
 
             await FetchTweets(SharedCancellationToken.Value).ContinueWith(task =>
             {
-                try
+                // 當有獲取到推文時才進一步處理。
+                if (FetchedTweets.Any())
                 {
-                    // 繫結 TweetData 跟 UserData。
-                    foreach (TweetData tweetData in FetchedTweets)
+                    try
                     {
-                        UserData? userData = FetchedUsers.FirstOrDefault(n => n.ID == tweetData.UserID);
-
-                        if (userData != null)
+                        // 繫結 TweetData 跟 UserData。
+                        foreach (TweetData tweetData in FetchedTweets)
                         {
-                            tweetData.UserData = userData;
-                        }
-                    }
+                            UserData? userData = FetchedUsers.FirstOrDefault(n => n.ID == tweetData.UserID);
 
-                    AddDataToListView(LVFetchedTweets, FetchedTweets);
-                }
-                catch (Exception ex)
-                {
-                    ShowErrMsg(this, ex.ToString());
+                            if (userData != null)
+                            {
+                                tweetData.UserData = userData;
+                            }
+                        }
+
+                        AddDataToListView(LVFetchedTweets, FetchedTweets);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowErrMsg(this, ex.ToString());
+                    }
                 }
             });
         }
