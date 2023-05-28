@@ -61,7 +61,13 @@ public partial class FMain
     /// </summary>
     /// <param name="listview">ListView</param>
     /// <param name="listTweetData">List&lt;TweetData&gt;</param>
-    public async void AddDataToListView(ListView listview, List<TweetData> listTweetData)
+    /// <param name="notDownloadProfileImage">布林值，是否不下載個人檔案圖檔，預設值為 false</param>
+    /// <param name="notEmulateManualSurf">布林值，是否不模擬人工瀏覽，預設值為 false</param>
+    public async void AddDataToListView(
+        ListView listview,
+        List<TweetData> listTweetData,
+        bool notDownloadProfileImage = false,
+        bool notEmulateManualSurf = false)
     {
         List<ListViewItem> dataSet = new();
 
@@ -94,77 +100,82 @@ public partial class FMain
 
             newListViewItem.SubItems.AddRange(subItems);
 
-            // 使用 screenName 當作 imgKey。
-            string? imgKey = tweetData.UserData?.ScreenName,
-                profileImageUrl = tweetData.UserData?.ProfileImageUrlHttps;
-
-            if (!string.IsNullOrEmpty(imgKey))
+            // 判斷是否不下載個人檔案圖檔。
+            if (notDownloadProfileImage == false)
             {
-                bool needDelay = false;
+                // 使用 screenName 當作 imgKey。
+                string? imgKey = tweetData.UserData?.ScreenName,
+                    profileImageUrl = tweetData.UserData?.ProfileImageUrlHttps;
 
-                listview.InvokeIfRequired(() =>
+                if (!string.IsNullOrEmpty(imgKey))
                 {
-                    if (listview.SmallImageList != null &&
-                        !listview.SmallImageList.Images.ContainsKey(imgKey))
+                    bool needDelay = false;
+
+                    listview.InvokeIfRequired(() =>
                     {
-                        // 以 imgKey 為鍵值，將 Image 暫存 10 分鐘。
-                        Image? image = BetterCacheManager.GetCachableData(imgKey, () =>
+                        if (listview.SmallImageList != null &&
+                            !listview.SmallImageList.Images.ContainsKey(imgKey))
                         {
-                            // 當有下載行為時，才需要模擬人工瀏覽。
-                            needDelay = true;
-
-                            try
+                            // 以 imgKey 為鍵值，將 Image 暫存 10 分鐘。
+                            Image? image = BetterCacheManager.GetCachableData(imgKey, () =>
                             {
-                                WriteLog(this, $"正在下載使用者（{imgKey}）的個人檔案圖檔……");
+                                // 當有下載行為時，才需要模擬人工瀏覽。
+                                needDelay = true;
 
-                                // 取得 HttpClient。
-                                using HttpClient httpClient = HttpClientUtil.GetHttpClient(_httpClientFactory);
-
-                                byte[] bytes = httpClient.GetByteArrayAsync(profileImageUrl).Result;
-
-                                using MemoryStream memoryStream = new(bytes);
-
-                                return Image.FromStream(memoryStream);
-                            }
-                            catch (Exception ex)
-                            {
-                                WriteLog(this, $"使用者（{imgKey}）的個人檔案圖檔下載失敗。");
-                                WriteLog(this, ex.ToString());
-
-                                Bitmap bitmap = new(64, 64);
-
-                                using (Graphics graphics = Graphics.FromImage(bitmap))
+                                try
                                 {
-                                    graphics.Clear(Color.FromKnownColor(KnownColor.White));
+                                    WriteLog(this, $"正在下載使用者（{imgKey}）的個人檔案圖檔……");
+
+                                    // 取得 HttpClient。
+                                    using HttpClient httpClient = HttpClientUtil.GetHttpClient(_httpClientFactory);
+
+                                    byte[] bytes = httpClient.GetByteArrayAsync(profileImageUrl).Result;
+
+                                    using MemoryStream memoryStream = new(bytes);
+
+                                    return Image.FromStream(memoryStream);
                                 }
+                                catch (Exception ex)
+                                {
+                                    WriteLog(this, $"使用者（{imgKey}）的個人檔案圖檔下載失敗。");
+                                    WriteLog(this, ex.ToString());
 
-                                return bitmap;
-                            }
-                        }, 10);
+                                    Bitmap bitmap = new(64, 64);
 
-                        listview.SmallImageList.Images.Add(imgKey, image);
+                                    using (Graphics graphics = Graphics.FromImage(bitmap))
+                                    {
+                                        graphics.Clear(Color.FromKnownColor(KnownColor.White));
+                                    }
 
-                        image.Dispose();
-                        image = null;
+                                    return bitmap;
+                                }
+                            }, 10);
 
-                        WriteLog(this, $"使用者（{imgKey}）的個人檔案圖檔下載完成。");
-                    }
-                    else
+                            listview.SmallImageList.Images.Add(imgKey, image);
+
+                            image.Dispose();
+                            image = null;
+
+                            WriteLog(this, $"使用者（{imgKey}）的個人檔案圖檔下載完成。");
+                        }
+                        else
+                        {
+                            WriteLog(this, $"使用者（{imgKey}）的個人檔案圖檔已存在，不需要再下載一次。");
+                        }
+
+                        newListViewItem.ImageKey = imgKey;
+                    });
+
+                    // 判斷是否不模擬人工瀏覽。
+                    if (notEmulateManualSurf == false && needDelay)
                     {
-                        WriteLog(this, $"使用者（{imgKey}）的個人檔案圖檔已存在，不需要再下載一次。");
+                        // 隨機延遲以模擬人工瀏覽。（2~5 秒）
+                        int milliseconds = CustomFunction.GetRandomInterval(2, 5);
+
+                        WriteLog(this, $"在 {milliseconds} 毫秒後才會再次處理推文。");
+
+                        await Task.Delay(milliseconds, CancellationToken.None);
                     }
-
-                    newListViewItem.ImageKey = imgKey;
-                });
-
-                if (needDelay)
-                {
-                    // 隨機延遲以模擬人工瀏覽。（2~5 秒）
-                    int milliseconds = CustomFunction.GetRandomInterval(2, 5);
-
-                    WriteLog(this, $"在 {milliseconds} 毫秒後才會再次處理推文。");
-
-                    await Task.Delay(milliseconds, CancellationToken.None);
                 }
             }
 
@@ -496,8 +507,11 @@ public partial class FMain
     /// 獲取推文資料
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
+    /// <param name="notEmulateManualSurf">布林值，是否不模擬人工瀏覽，預設值為 false</param>
     /// <returns>Task</returns>
-    public async Task FetchTweets(CancellationToken cancellationToken = default)
+    public async Task FetchTweets(
+        bool notEmulateManualSurf = false,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -559,12 +573,16 @@ public partial class FMain
 
                 WriteLog(this, $"正在獲取推文…… （第 {roundIndex} 頁）");
 
-                // 隨機延遲以模擬人工瀏覽。（3~7 秒）
-                int milliseconds = CustomFunction.GetRandomInterval(3, 7);
+                // 判斷是否不模擬人工瀏覽。
+                if (notEmulateManualSurf == false)
+                {
+                    // 隨機延遲以模擬人工瀏覽。（3~7 秒）
+                    int milliseconds = CustomFunction.GetRandomInterval(3, 7);
 
-                WriteLog(this, $"在 {milliseconds} 毫秒後才會再次獲取資料。");
+                    WriteLog(this, $"在 {milliseconds} 毫秒後才會再次獲取資料。");
 
-                await Task.Delay(milliseconds, cancellationToken);
+                    await Task.Delay(milliseconds, cancellationToken);
+                }
 
                 roundIndex++;
             }

@@ -40,10 +40,12 @@ public partial class FMain : Form
             TBQueryString,
             BtnFetchTweets,
             BtnReset,
+            CBNotEmulateManualSurf,
+            CBNotDownloadProfileImage,
+            BtnExportTweets,
             NUPDrawAmount,
             CBExcludeSameUser,
-            BtnDrawTweets,
-            BtnExportTweets
+            BtnDrawTweets
         };
 
         try
@@ -56,7 +58,10 @@ public partial class FMain : Form
             SharedCancellationTokenSource = new();
             SharedCancellationToken = SharedCancellationTokenSource.Token;
 
-            await FetchTweets(SharedCancellationToken.Value).ContinueWith(task =>
+            bool notDownloadProfileImage = CBNotDownloadProfileImage.Checked,
+                notEmulateManualSurf = CBNotEmulateManualSurf.Checked;
+
+            await FetchTweets(notEmulateManualSurf, SharedCancellationToken.Value).ContinueWith(task =>
             {
                 // 當有獲取到推文時才進一步處理。
                 if (FetchedTweets.Any())
@@ -74,7 +79,11 @@ public partial class FMain : Form
                             }
                         }
 
-                        AddDataToListView(LVFetchedTweets, FetchedTweets);
+                        AddDataToListView(
+                            LVFetchedTweets,
+                            FetchedTweets,
+                            notDownloadProfileImage,
+                            notEmulateManualSurf);
                     }
                     catch (Exception ex)
                     {
@@ -110,8 +119,26 @@ public partial class FMain : Form
 
     private void BtnReset_Click(object sender, EventArgs e)
     {
+        Control[] ctrlSet1 =
+        {
+            TBAuthToken,
+            TBCsrfToken,
+            TBQueryString,
+            BtnFetchTweets,
+            BtnCancel,
+            BtnReset,
+            CBNotEmulateManualSurf,
+            CBNotDownloadProfileImage,
+            BtnExportTweets,
+            NUPDrawAmount,
+            CBExcludeSameUser,
+            BtnDrawTweets
+        };
+
         try
         {
+            ctrlSet1.SetEnabled(false);
+
             FetchedTweets.Clear();
             FetchedUsers.Clear();
 
@@ -128,6 +155,10 @@ public partial class FMain : Form
         {
             ShowErrMsg(this, ex.ToString());
         }
+        finally
+        {
+            ctrlSet1.SetEnabled(true);
+        }
     }
 
     private async void BtnDrawTweets_Click(object sender, EventArgs e)
@@ -139,10 +170,12 @@ public partial class FMain : Form
             TBQueryString,
             BtnFetchTweets,
             BtnReset,
+            CBNotEmulateManualSurf,
+            CBNotDownloadProfileImage,
+            BtnExportTweets,
             NUPDrawAmount,
             CBExcludeSameUser,
-            BtnDrawTweets,
-            BtnExportTweets
+            BtnDrawTweets
         };
 
         try
