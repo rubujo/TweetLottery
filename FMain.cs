@@ -47,13 +47,13 @@ public partial class FMain : Form
             CBExcludeSameUser,
             BtnDrawTweets
         };
-
+        
         try
         {
-            ctrlSet1.SetEnabled(false);
-
             // 先執行一次重設。
             BtnReset_Click(this, e);
+
+            ctrlSet1.SetEnabled(false);
 
             SharedCancellationTokenSource = new();
             SharedCancellationToken = SharedCancellationTokenSource.Token;
