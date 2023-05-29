@@ -796,6 +796,12 @@ public partial class FMain
                                 excelRange.Style.Font.Color.SetColor(listViewItem.SubItems[j].ForeColor);
                                 excelRange.Style.Fill.SetBackground(listViewItem.BackColor);
                                 excelRange.Style.WrapText = true;
+
+                                // 將 6~8 設為超連結。
+                                if (j >= 6 && j <= 8)
+                                {
+									excelRange.Hyperlink = new Uri(listViewSubItem.Text, UriKind.Absolute);
+								}
                             }
 
                             startIdx1++;

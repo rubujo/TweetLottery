@@ -58,10 +58,15 @@ public partial class FDrawResult
     /// </summary>
     private readonly CheckBox _CBNotDownloadProfileImage;
 
-    /// <summary>
-    /// FMain 的 NUPDrawAmount
-    /// </summary>
-    private readonly NumericUpDown _NUPDrawAmount;
+	/// <summary>
+	/// FMain 的 CBHideTokenField
+	/// </summary>
+	private readonly CheckBox _CBHideTokenField;
+
+	/// <summary>
+	/// FMain 的 NUPDrawAmount
+	/// </summary>
+	private readonly NumericUpDown _NUPDrawAmount;
 
     /// <summary>
     /// FMain 的 CBExcludeSameUser
